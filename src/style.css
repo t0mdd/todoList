@@ -1,0 +1,32 @@
+* {
+  body: 0;
+  margin: 0;
+}
+
+.wood {
+  color: burlywood;
+  font-size: 70px;
+}
+
+.todo-container {
+  width: 500px;
+  background-color: aliceblue;
+  display: flex;
+  flex-direction: column;
+}
+
+.edit {
+  width: max-content;
+}
+
+.todo-edit-mode {
+
+}
+
+.hidden {
+  display: none;
+}
+
+.complete-symbol {
+  width: max-content;
+}
