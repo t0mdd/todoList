@@ -44,6 +44,7 @@
     "neo-async": "^2.6.2",
     "node-releases": "^2.0.6",
     "picocolors": "^1.0.0",
+    "pubsub-js": "^1.9.4",
     "punycode": "^2.1.1",
     "randombytes": "^2.1.0",
     "safe-buffer": "^5.2.1",

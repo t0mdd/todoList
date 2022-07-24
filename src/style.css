@@ -15,7 +15,7 @@
   flex-direction: column;
 }
 
-.edit {
+.edit , .expand{
   width: max-content;
 }
 
