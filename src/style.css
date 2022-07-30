@@ -3,6 +3,11 @@
   margin: 0;
 }
 
+h1 {
+  font-size: 1.5rem;
+  color: black;
+}
+
 .wood {
   color: burlywood;
   font-size: 70px;
