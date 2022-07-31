@@ -1,6 +1,10 @@
-import _ from 'lodash';
+import { remove, mapValues } from 'lodash';
 import PubSub from 'pubsub-js';
 import { isValid } from 'date-fns';
+import { format, parse } from 'date-fns';
+
+const formatDate = (date) => format(date, 'dd/MM/yyyy');
+const parseDate = (str) => parse(str, 'dd/MM/yyyy', new Date());
 
 const INITIAL_PROJECT_NAME = 'Default';
 
@@ -20,22 +24,22 @@ const createProject = (name) => {
   return true;
 };
 
-const removeProject = (name) => _.remove(projects, (project) => project.name === name);
+const removeProject = (name) => remove(projects, (project) => project.name === name);
 
-const removeTodo = (id) => _.remove(currentProject.todos, (todo) => todo.id === id);
+const removeTodo = (id) => remove(currentProject.todos, (todo) => todo.id === id);
 
 const findTodoWithId = (id) => currentProject.todos.find((todo) => todo.id === id);
 
 const updateTodoWithId = (id, newTodo) => {
-  let indexInArray = currentProject.todos.indexOf(findTodoWithId(id));
+  const indexInArray = currentProject.todos.findIndex((todo) => todo.id === id);
   currentProject.todos[indexInArray] = newTodo;
-}
+};
 
 PubSub.subscribe('delete clicked', (msg, id) => {
   removeTodo(id);
 });
 
-const todoTitleTaken = (title, oldTitle=false) => {
+const todoTitleTaken = (title, oldTitle = false) => {
   for (const todo of currentProject.todos) {
     if (oldTitle && todo.title === oldTitle) continue;
     if (title === todo.title) return true;
@@ -43,7 +47,19 @@ const todoTitleTaken = (title, oldTitle=false) => {
   return false;
 };
 
-const generateTodoErrors = (todo, oldTodo=false) => {
+const todoToTextData = (todo) => {
+  const data = {...todo};
+  data.dueDate = formatDate(data.dueDate);
+  return data;
+};
+
+const todoToStorageData = (todo) => {
+  const data = {...todo};
+  data.dueDate = parseDate(data.dueDate);
+  return data;
+};
+
+const generateTodoErrors = (todo, oldTodo = false) => {
   const errors = [];
   const { title, dueDate } = todo;
   if (oldTodo && todoTitleTaken(title, oldTodo.title) || !oldTodo && todoTitleTaken(title)) {
@@ -53,7 +69,8 @@ const generateTodoErrors = (todo, oldTodo=false) => {
   return errors;
 };
 
-const createTodo = (title, description, priority, dueDate = new Date()) => {
+const createTodo = (title, description, priority, dueDate = false) => {
+  dueDate = dueDate ? parseDate(dueDate) : new Date();
   const todo = {
     title,
     description,
@@ -69,31 +86,34 @@ const createTodo = (title, description, priority, dueDate = new Date()) => {
   }
   nextTodoId += 1;
   currentProject.todos.push(todo);
-  PubSub.publish('todo added', todo);
+  PubSub.publish('todo added', todoToTextData(todo));
   return true;
 };
 
 const updateTodo = (updatedData) => {
-  let id = updatedData.id;
-  let oldTodo = findTodoWithId(id);
-  let newTodo = {...oldTodo};
+  const { id } = updatedData;
+  const oldTodo = findTodoWithId(id);
+  const newTodo = { ...oldTodo };
   for (const key in updatedData) {
     if (key === 'id') continue;
     newTodo[key] = updatedData[key];
   }
   const errors = generateTodoErrors(newTodo, oldTodo);
   if (errors.length > 0) {
-    PubSub.publish('error updating todo', {errors, editedTodoId: id});
+    PubSub.publish('error updating todo', { errors, editedTodoId: id });
     return false;
-  } else {
-    updateTodoWithId(id,newTodo);
-    PubSub.publish('todo updated', id);
   }
-}
+  updateTodoWithId(id, newTodo);
+  PubSub.publish('todo updated', id);
+  return true;
+};
+
+PubSub.subscribe('create todo clicked', (msg, data) => {
+  createTodo(data.title, data.description, data.priority, data.dueDate);
+});
 
 PubSub.subscribe('todo edited', (msg, data) => {
-  const todoToEdit = findTodoWithId(data.id);
-  updateTodo(data);
+  updateTodo(todoToStorageData(data));
 });
 
 PubSub.subscribe('complete toggled', (msg, id) => {

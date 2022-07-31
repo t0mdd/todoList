@@ -1,77 +1,78 @@
 import PubSub from 'pubsub-js';
-import {format, parse} from 'date-fns';
-
-const formatDate = date => format(date, 'dd/MM/yyyy');
-const parseDate = str => parse(str, 'dd/MM/yyyy', new Date());
 
 const completeSymbol = '✓';
 const incompleteSymbol = '✗';
-const completeMarkContent = isComplete => 
-  isComplete ? completeSymbol : incompleteSymbol;
+const completeMarkContent = (isComplete) => (isComplete ? completeSymbol : incompleteSymbol);
 
 const notEditingText = 'Edit';
 const editingText = 'Finish editing';
-const editText = editing => editing ? editingText : notEditingText;
+const editText = (editing) => (editing ? editingText : notEditingText);
 
 const notExpandedText = 'Show description';
 const expandedText = 'Hide description';
-const expandText = expanded => expanded ? expandedText : notExpandedText;
+const expandText = (expanded) => (expanded ? expandedText : notExpandedText);
 
 const createTitle = (content) => {
   const element = document.createElement('h1');
+  element.classList.add('title');
   element.textContent = content;
   return element;
-}
+};
 
 const createCompleteMark = (isComplete) => {
-  let element = document.createElement('b');
+  const element = document.createElement('b');
   element.classList.add('complete-symbol');
   element.textContent = completeMarkContent(isComplete);
   return element;
-}
+};
 
 const createDueDate = (dueDate) => {
   const element = document.createElement('p');
+  element.classList.add('dueDate');
   element.textContent = dueDate;
   return element;
-}
+};
 
 const createDescription = (content) => {
   const element = document.createElement('p');
+  element.classList.add('description');
   element.textContent = content;
   element.classList.add('hidden');
   return element;
-}
+};
 const createErrorDisplay = () => {
   const element = document.createElement('p');
   element.classList.add('error-display', 'hidden');
   return element;
-}
+};
 
 const createEditButton = () => {
   const element = document.createElement('button');
+  element.classList.add('edit-button');
   element.textContent = notEditingText;
   return element;
-}
+};
 
 const createDiscardChangesButton = () => {
   const element = document.createElement('button');
   element.textContent = 'Discard Changes';
-  element.classList.add('hidden');
+  element.classList.add('discard-changes-button', 'hidden');
   return element;
-}
+};
 
 const createExpandButton = () => {
   const element = document.createElement('button');
+  element.classList.add('expand-button');
   element.textContent = notExpandedText;
   return element;
-}
+};
 
 const createDeleteButton = () => {
   const element = document.createElement('button');
+  element.classList.add('delete-button');
   element.textContent = 'Delete';
   return element;
-}
+};
 
 const createTodoElement = (todo) => {
   let lastSnapshot;
@@ -79,12 +80,12 @@ const createTodoElement = (todo) => {
   let expanded = false;
   let isComplete = todo.complete;
 
-  const id = todo.id;
+  const { id } = todo;
 
   const container = document.createElement('div');
   const title = createTitle(todo.title);
   const completeMark = createCompleteMark(isComplete);
-  const dueDate = createDueDate(formatDate(todo.dueDate));
+  const dueDate = createDueDate(todo.dueDate);
   const description = createDescription(todo.description);
   const errorDisplay = createErrorDisplay();
   const editButton = createEditButton();
@@ -97,20 +98,18 @@ const createTodoElement = (todo) => {
     dueDate,
     description,
   };
-  
-  const grabEditableData = () => {
-    return {
-      title: title.textContent,
-      dueDate: parseDate(dueDate.textContent),
-      description: description.textContent,
-    }
-  };
+
+  const grabEditableData = () => ({
+    title: title.textContent,
+    dueDate: dueDate.textContent,
+    description: description.textContent,
+  });
 
   const resetToLastSnapshot = () => {
     title.textContent = lastSnapshot.title;
-    dueDate.textContent = formatDate(lastSnapshot.dueDate);
+    dueDate.textContent = lastSnapshot.dueDate;
     description.textContent = lastSnapshot.description;
-  }
+  };
 
   const finishEditing = () => {
     changeContentEditableStatus(false);
@@ -119,8 +118,8 @@ const createTodoElement = (todo) => {
     discardChangesButton.classList.add('hidden');
     errorDisplay.textContent = '';
     errorDisplay.classList.add('hidden');
-  }
-  
+  };
+
   const changeContentEditableStatus = (newStatus) => {
     for (const key in editableElements) {
       editableElements[key].contentEditable = newStatus;
@@ -134,7 +133,7 @@ const createTodoElement = (todo) => {
   };
 
   container.classList.add('todo-container');
-  container.id = 'todo-' + id;
+  container.id = `todo-${id}`;
 
   completeMark.addEventListener('click', () => {
     isComplete = !isComplete;
@@ -144,7 +143,7 @@ const createTodoElement = (todo) => {
 
   editButton.addEventListener('click', () => {
     if (editMode) {
-      PubSub.publish('todo edited', { id, ...grabEditableData()});
+      PubSub.publish('todo edited', { id, ...grabEditableData() });
     }
     else {
       lastSnapshot = grabEditableData();
@@ -153,7 +152,7 @@ const createTodoElement = (todo) => {
       editMode = true;
       editButton.textContent = editingText;
       discardChangesButton.classList.remove('hidden');
-      triggerExpandEvents(); 
+      triggerExpandEvents();
     }
   });
 
@@ -170,7 +169,7 @@ const createTodoElement = (todo) => {
     for (const error of errors) {
       errorDisplay.textContent += `${error} `;
     }
-  })
+  });
 
   discardChangesButton.addEventListener('click', () => {
     resetToLastSnapshot();
@@ -187,16 +186,26 @@ const createTodoElement = (todo) => {
     PubSub.publish('delete clicked', id);
   });
 
-  container.append(title, completeMark, dueDate, description, errorDisplay, editButton, discardChangesButton, expandButton, deleteButton);
+  container.append(
+    title,
+    completeMark,
+    dueDate,
+    description,
+    errorDisplay,
+    editButton,
+    discardChangesButton,
+    expandButton,
+    deleteButton,
+  );
   document.body.appendChild(container);
-}
+};
 
 PubSub.subscribe('todo added', (msg, todo) => createTodoElement(todo));
 
-const removeTodoElement = id => {
-  document.body.removeChild(document.querySelector('#todo-' + id));
-}
+const removeTodoElement = (id) => {
+  document.body.removeChild(document.querySelector(`#todo-${id}`));
+};
 
 export {
   createTodoElement,
-}
+};
