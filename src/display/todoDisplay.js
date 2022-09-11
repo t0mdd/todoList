@@ -1,4 +1,6 @@
 import PubSub from 'pubsub-js';
+import * as appcsts from '../appcsts.js';
+import * as fns from './fns.js';
 
 const completeSymbol = '✓';
 const incompleteSymbol = '✗';
@@ -12,67 +14,103 @@ const notExpandedText = 'Show description';
 const expandedText = 'Hide description';
 const expandText = (expanded) => (expanded ? expandedText : notExpandedText);
 
-const createTitle = (content) => {
-  const element = document.createElement('h1');
-  element.classList.add('title');
-  element.textContent = content;
-  return element;
-};
+const emptyProjectMessage = 'No todos in this project!';
 
-const createCompleteMark = (isComplete) => {
-  const element = document.createElement('b');
-  element.classList.add('complete-symbol');
-  element.textContent = completeMarkContent(isComplete);
-  return element;
-};
+const emptyProjectMessageElement = fns.createElement({
+  type: 'p',
+  classList: 'empty-project-message',
+  textContent: emptyProjectMessage,
+});
 
-const createDueDate = (dueDate) => {
-  const element = document.createElement('p');
-  element.classList.add('dueDate');
-  element.textContent = dueDate;
-  return element;
-};
+const addNewTodoButton = fns.createElement({
+  type: 'button',
+  textContent: 'Add new todo',
+  clickEventListener: () => PubSub.publish('add new todo clicked'),
+});
 
-const createDescription = (content) => {
-  const element = document.createElement('p');
-  element.classList.add('description');
-  element.textContent = content;
-  element.classList.add('hidden');
-  return element;
-};
-const createErrorDisplay = () => {
-  const element = document.createElement('p');
-  element.classList.add('error-display', 'hidden');
-  return element;
-};
+document.body.appendChild(addNewTodoButton);
 
-const createEditButton = () => {
-  const element = document.createElement('button');
-  element.classList.add('edit-button');
-  element.textContent = notEditingText;
-  return element;
-};
+const sortDropdownLabel = fns.createElement({
+  type: 'label',
+  textContent: 'Sort by:',
+});
 
-const createDiscardChangesButton = () => {
-  const element = document.createElement('button');
-  element.textContent = 'Discard Changes';
-  element.classList.add('discard-changes-button', 'hidden');
-  return element;
-};
+const sortMethodDropdown = document.createElement('select');
+for (const method in appcsts.SORTING_FUNCTIONS) {
+  const option = document.createElement('option');
+  option.textContent = method;
+  option.addEventListener('click', () => {
+    PubSub.publish('sort method selected', method);
+  });
+  sortMethodDropdown.appendChild(option);
+}
+document.body.appendChild(sortMethodDropdown);
 
-const createExpandButton = () => {
-  const element = document.createElement('button');
-  element.classList.add('expand-button');
-  element.textContent = notExpandedText;
-  return element;
-};
+const sortDirectionDropdown = document.createElement('select');
+const directions = ['Ascending', 'Descending'];
+for (const direction of directions) {
+  let option = document.createElement('option');
+  option.textContent = direction;
+  option.addEventListener('click', () => {
+    PubSub.publish('sort direction selected', direction);
+  });
+  sortDirectionDropdown.appendChild(option);
+}
 
-const createDeleteButton = () => {
-  const element = document.createElement('button');
-  element.classList.add('delete-button');
-  element.textContent = 'Delete';
-  return element;
-};
+document.body.appendChild(sortDirectionDropdown);
+
+const todosContainer = fns.createElement({
+  type: 'div',
+  classList: 'todos-container',
+});
+
+const createTitle = (textContent) => fns.createElement({
+  type: 'h1',
+  classList: 'todo-title',
+  textContent,
+});
+
+const createCompleteMark = (isComplete) => fns.createElement({
+  type: 'b',
+  classList: 'complete-symbol',
+  textContent: completeMarkContent(isComplete),
+});
+
+const createDueDate = (dueDate) => fns.createElement({
+  type: 'p',
+  classList: 'dueDate',
+  textContent: dueDate,
+});
+
+const createDescription = (textContent) => fns.createElement({
+  type: 'p',
+  classList: 'description hidden',
+  textContent,
+});
+
+const createEditButton = () => fns.createElement({
+  type: 'button',
+  classList: 'editButton',
+  textContent: notEditingText,
+});
+
+const createDiscardChangesButton = () => fns.createElement({
+  type: 'button',
+  classList: 'discard-changes-button hidden',
+  textContent: 'Discard Changes',
+});
+
+const createExpandButton = () => fns.createElement({
+  type: 'button',
+  classList: 'expand-button',
+  textContent: notExpandedText,
+});
+
+const createDeleteButton = () => fns.createElement({
+  type: 'button',
+  classList: 'delete-button',
+  textContent: 'Delete',
+});
 
 const createTodoElement = (todo) => {
   let lastSnapshot;
@@ -87,7 +125,7 @@ const createTodoElement = (todo) => {
   const completeMark = createCompleteMark(isComplete);
   const dueDate = createDueDate(todo.dueDate);
   const description = createDescription(todo.description);
-  const errorDisplay = createErrorDisplay();
+  const errorDisplay = fns.createErrorDisplay();
   const editButton = createEditButton();
   const discardChangesButton = createDiscardChangesButton();
   const expandButton = createExpandButton();
@@ -109,9 +147,6 @@ const createTodoElement = (todo) => {
     title.textContent = lastSnapshot.title;
     dueDate.textContent = lastSnapshot.dueDate;
     description.textContent = lastSnapshot.description;
-  };
-
-  const finishEditing = () => {
     changeContentEditableStatus(false);
     editMode = false;
     editButton.textContent = notEditingText;
@@ -156,11 +191,6 @@ const createTodoElement = (todo) => {
     }
   });
 
-  PubSub.subscribe('todo updated', (msg, updatedTodoId) => {
-    if (id !== updatedTodoId) return;
-    finishEditing();
-  });
-
   PubSub.subscribe('error updating todo', (msg, data) => {
     const { editedTodoId, errors } = data;
     if (id !== editedTodoId) return;
@@ -173,7 +203,6 @@ const createTodoElement = (todo) => {
 
   discardChangesButton.addEventListener('click', () => {
     resetToLastSnapshot();
-    finishEditing();
   });
 
   expandButton.addEventListener('click', () => {
@@ -182,7 +211,6 @@ const createTodoElement = (todo) => {
   });
 
   deleteButton.addEventListener('click', () => {
-    removeTodoElement(id);
     PubSub.publish('delete clicked', id);
   });
 
@@ -197,15 +225,39 @@ const createTodoElement = (todo) => {
     expandButton,
     deleteButton,
   );
-  document.body.appendChild(container);
+  return container;
 };
 
-PubSub.subscribe('todo added', (msg, todo) => createTodoElement(todo));
+const displayAllTodos = (todoTextDataArray) => {
+  fns.clearContent(todosContainer);
+  if (todoTextDataArray.length === 0) {
+    todosContainer.appendChild(emptyProjectMessageElement);
+    return;
+  }
+  for (const todoData of todoTextDataArray) todosContainer.appendChild(createTodoElement(todoData));
+};
+
+PubSub.subscribe('todo array changed', (msg, todoTextDataArray) => displayAllTodos(todoTextDataArray));
 
 const removeTodoElement = (id) => {
-  document.body.removeChild(document.querySelector(`#todo-${id}`));
+  todosContainer.removeChild(document.querySelector(`#todo-${id}`));
 };
 
-export {
-  createTodoElement,
+const createTodoDisplay = () => {
+  const container = fns.createElement({
+    type: 'div',
+    classList: 'todo-display',
+  });
+
+  container.append(
+    todosContainer,
+    addNewTodoButton,
+    sortDropdownLabel,
+    sortMethodDropdown,
+    sortDirectionDropdown,
+  );
+
+  return container;
 };
+
+export default createTodoDisplay;

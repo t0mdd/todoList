@@ -3,7 +3,29 @@
   margin: 0;
 }
 
-.title {
+body {
+  display: flex;
+}
+
+.project-display {
+  flex: 1;
+}
+
+.project-link:hover {
+  color: red;
+  cursor: pointer;
+}
+
+.project-link.being-renamed {
+  color: black;
+  cursor: auto;
+}
+
+.todo-display {
+  flex: 5;
+}
+
+.todo-title {
   font-size: 1.5rem;
   color: black;
 }
@@ -24,14 +46,32 @@
   width: max-content;
 }
 
-.todo-edit-mode {
-
-}
-
-.hidden {
+.hidden , 
+.modal.hidden {
   display: none;
 }
 
 .complete-symbol {
   width: max-content;
+}
+
+.modal {
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content-container {
+  background-color: rgb(217, 164, 124);
+  padding: 10px;
+  border-radius: 10px;
+  border: 5px solid rgb(251, 255, 11);
 }
