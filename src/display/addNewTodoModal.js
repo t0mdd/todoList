@@ -1,4 +1,4 @@
-import { forIn } from 'lodash';
+import { forIn, forEach } from 'lodash';
 import PubSub from 'pubsub-js';
 import * as appcsts from '../appcsts.js';
 import * as fns from './fns.js';
@@ -67,9 +67,9 @@ const discardButton = fns.createElement({
 });
 
 function appendInputFields() {
-  for(const fieldName in appcsts.ADD_NEW_TODO_FORM_LABEL_STRUCTURE) {
+  forEach(appcsts.ADD_NEW_TODO_FORM_LABEL_STRUCTURE, (value, fieldName) => {
     addNewTodoFormContainer.append(inputFieldLabels[fieldName], inputFieldElements[fieldName]);
-  }
+  });
 }
 
 addNewTodoModal.appendChild(addNewTodoFormContainer);

@@ -248,7 +248,7 @@ const createTodoDisplay = () => {
     type: 'div',
     classList: 'todo-display',
   });
-
+  
   container.append(
     todosContainer,
     addNewTodoButton,
@@ -257,6 +257,8 @@ const createTodoDisplay = () => {
     sortDirectionDropdown,
   );
 
+  PubSub.subscribe('no projects', (msg) => container.classList.add('hidden'));
+  PubSub.subscribe('project added', (msg) => container.classList.remove('hidden'));
   return container;
 };
 

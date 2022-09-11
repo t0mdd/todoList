@@ -46,14 +46,14 @@ const clearEverything = () => {
 const removeForm = () => {
   clearEverything();
   fns.hideElement(addNewProjectModal);
-  PubSub.publish('add-new-project-form-removed');
+  PubSub.publish('add new project form removed');
 };
 
 const createProjectButton = fns.createElement({
   type: 'button',
   classList: 'create-project-button',
   textContent: 'Create project',
-  clickEventListener: () => PubSub.publish('create-project-button-clicked', getInputValues()),
+  clickEventListener: () => PubSub.publish('create project button clicked', getInputValues()),
 });
 
 const discardButton = fns.createElement({
@@ -71,7 +71,7 @@ for(const fieldName in appcsts.ADD_NEW_PROJECT_FORM_LABEL_STRUCTURE) {
 
 addNewProjectFormContainer.append(errorDisplay, createProjectButton, discardButton);
 
-PubSub.subscribe('add-new-project-button-clicked', () => fns.unhideElement(addNewProjectModal));
-PubSub.subscribe('project-added', removeForm);
+PubSub.subscribe('add new project button clicked', () => fns.unhideElement(addNewProjectModal));
+PubSub.subscribe('project added', removeForm);
 
 export default addNewProjectModal;

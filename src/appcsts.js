@@ -1,8 +1,11 @@
 import { isBefore, isEqual } from 'date-fns';
 
+const NO_PROJECTS_MESSAGE = 'No projects yet...';
+
 const INITIAL_PROJECT_DATA = {
-  title: 'Default',
+  title: 'Project 1',
   priority: 5,
+  id: 0,
 };
 
 const DEFAULT_TODO_SORT = { method: 'Date', direction: 'Ascending' };
@@ -47,6 +50,7 @@ const SORTING_FUNCTIONS = {
 };
 
 export {
+  NO_PROJECTS_MESSAGE,
   INITIAL_PROJECT_DATA,
   DEFAULT_TODO_SORT,
   SORTING_FUNCTIONS,

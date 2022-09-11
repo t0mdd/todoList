@@ -3,7 +3,7 @@ import PubSub from 'pubsub-js';
 import * as fns from './fns.js';
 import * as appcsts from '../appcsts.js';
 
-function createRenameButton(titleOfProjectToRename) {
+function createRenameButton(projectId) {
   const element = fns.createElement({
     type: 'button',
     classList: 'rename-button',
@@ -11,7 +11,7 @@ function createRenameButton(titleOfProjectToRename) {
   });
 
   element.addEventListener('click', () => {
-    const link = document.querySelector(`#project-${titleOfProjectToRename}`);
+    const link = document.querySelector(`#project-${projectId}`);
     if (link.contentEditable === 'false') {
       link.contentEditable = true;
       element.textContent = 'Finish Renaming';
@@ -19,7 +19,7 @@ function createRenameButton(titleOfProjectToRename) {
     }
     else {
       PubSub.publish('rename project clicked', {
-        oldTitle: titleOfProjectToRename,
+        id: projectId,
         newTitle: link.textContent,
       });
     }
@@ -28,31 +28,42 @@ function createRenameButton(titleOfProjectToRename) {
   return element;
 }
 
-function createLinkToProject(projectTitle) {
+function createDeleteButton(projectId) {
+  const button = fns.createElement({
+    type: 'button',
+    classList: 'delete-button',
+    textContent: 'Delete',
+    clickEventListener: () => PubSub.publish('delete project clicked', projectId),
+  });
+
+  return button;
+}
+
+function createLinkToProject(projectTitle, projectId) {
   const link = fns.createElement({
     type: 'p',
     classList: 'project-link',
-    id: `project-${projectTitle}`,
+    id: `project-${projectId}`,
     textContent: projectTitle,
   });
   link.contentEditable = false;
   link.addEventListener('click', () => PubSub.publish('project link clicked', {
-    projectTitle,
+    projectId,
     isBeingEdited: link.contentEditable === 'true',
   }));
   return link;
 }
 
-function createErrorDisplayFor(projectTitle) {
+function createErrorDisplayFor(projectId) {
   const errorDisplay = fns.createElement({
     type: 'p',
     classList: 'project-error-display hidden',
-    id: `project-error-display-${projectTitle}`,
+    id: `project-error-display-${projectId}`,
   });
 
   PubSub.subscribe('error updating project', (msg, errorData) => {
-    const { title, errors } = errorData;
-    if (title === projectTitle) {
+    const { errorId, errors } = errorData;
+    if (projectId === errorId) {
       errorDisplay.textContent = errors.join(' ');
       errorDisplay.classList.remove('hidden');
     }
@@ -61,15 +72,17 @@ function createErrorDisplayFor(projectTitle) {
   return errorDisplay;
 }
 
-function createProjectRow(projectTitle) {
+function createProjectRow(projectData) {
+  const { title, id } = projectData;
   const container = fns.createElement({
     type: 'div',
     classList: 'project-pane-row-container',
   });
-  const link = createLinkToProject(projectTitle);
-  const errorDisplay = createErrorDisplayFor(projectTitle);
-  const renameButton = createRenameButton(projectTitle);
-  container.append(link, errorDisplay, renameButton);
+  const link = createLinkToProject(title, id);
+  const errorDisplay = createErrorDisplayFor(id);
+  const renameButton = createRenameButton(id);
+  const deleteButton = createDeleteButton(id);
+  container.append(link, errorDisplay, renameButton, deleteButton);
   return container;
 }
 
@@ -80,11 +93,14 @@ function createCurrentProjectHeader() {
     textContent: appcsts.INITIAL_PROJECT_DATA.title,
   });
 
-  PubSub.subscribe('current project changed', (msg, newProjectTitle) => {
-    element.textContent = newProjectTitle;
+  PubSub.subscribe('current project changed', (msg, projectData) => {
+    if (projectData) element.textContent = projectData.title;
   });
+
+  PubSub.subscribe('no projects', (msg) => element.textContent = appcsts.NO_PROJECTS_MESSAGE);
+
   PubSub.subscribe('project renamed', (msg, projectData) => {
-    const {title, isCurrentProject} = projectData;
+    const { title, isCurrentProject } = projectData;
     if (isCurrentProject) element.textContent = title;
   });
   return element;
@@ -103,26 +119,26 @@ const createProjectDisplay = () => {
     type: 'button',
     classList: 'add-new-project-button',
     textContent: 'Add new project',
-    clickEventListener: () => PubSub.publish('add-new-project-button-clicked'),
+    clickEventListener: () => PubSub.publish('add new project button clicked'),
   });
 
-  container.append(createCurrentProjectHeader(), projectList, addNewProjectButton);
-
-  function addProjectToContainer(projectTitle) {
-    projectList.appendChild(createProjectRow(projectTitle));
+  function addProjectToContainer(projectData) {
+    projectList.appendChild(createProjectRow(projectData));
   }
 
   function displayAllProjects(projectArray) {
     fns.clearContent(projectList);
-    projectArray.forEach((project) => {
-      addProjectToContainer(project.title);
+    projectArray.forEach((projectData) => {
+      addProjectToContainer(projectData);
     });
   }
 
+  container.append(createCurrentProjectHeader(), projectList, addNewProjectButton);
+
   PubSub.subscribe('project array changed', (msg, projectArray) => displayAllProjects(projectArray));
 
-  PubSub.subscribe('project-added', (msg, name) => {
-    addProjectToContainer(name);
+  PubSub.subscribe('project added', (msg, projectData) => {
+    addProjectToContainer(projectData);
   });
 
   return container;

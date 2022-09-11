@@ -11,24 +11,30 @@ const projects = [];
 
 let currentProject;
 let currentTodoSort = appcsts.DEFAULT_TODO_SORT;
+let nextProjectId = 1;
 let nextTodoId = 0;
 
 const getCurrentProject = () => currentProject;
 
 function setCurrentProject(newProject) {
   currentProject = newProject;
-  PubSub.publish('current project changed', newProject.title);
-  PubSub.publish('todo array changed', generateTodosTextData());
+  PubSub.publish('current project changed', newProject);
+  if (newProject) PubSub.publish('todo array changed', generateTodosTextData());
+  else PubSub.publish('no projects');
 }
 
-function findProjectWithTitle(projectTitle) {
-  return projects.find((project) => project.title === projectTitle);
+function findProjectWithTitle(title) {
+  return projects.find((project) => project.title === title);
+}
+
+function findProjectWithId(id) {
+  return projects.find((project) => project.id === id);
 }
 
 PubSub.subscribe('project link clicked', (msg, linkData) => {
-  const { projectTitle, isBeingEdited } = linkData;
+  const { projectId, isBeingEdited } = linkData;
   if (!isBeingEdited) {
-    setCurrentProject(findProjectWithTitle(projectTitle));
+    setCurrentProject(findProjectWithId(projectId));
   }
 });
 
@@ -55,19 +61,31 @@ const createProject = (data) => {
   const { title, priority } = data;
   const errors = generateProjectErrors(data);
   if (errors.length > 0) {
-    PubSub.publish('error-creating-project', errors);
+    PubSub.publish('error creating project', errors);
     return;
   }
-  const project = { title, priority, todos: [] };
+  const project = { title, priority, todos: [], id: nextProjectId };
   currentProject = project;
   projects.push(project);
-  PubSub.publish('project-added', title);
+  PubSub.publish('project added', project);
   setCurrentProject(project);
+  nextProjectId++;
 };
 
-PubSub.subscribe('create-project-button-clicked', (msg, data) => createProject(data));
+PubSub.subscribe('create project button clicked', (msg, data) => createProject(data));
 
-const removeProject = (title) => remove(projects, (project) => project.title === title);
+function removeProjectWithId(id) {
+  remove(projects, (project) => project.id === id);
+}
+
+PubSub.subscribe('delete project clicked', (msg, projectId) => {
+  const projectToRemove = findProjectWithId(projectId);
+  removeProjectWithId(projectId);
+  PubSub.publish('project array changed', projects);
+  if (currentProject.id === projectId) {
+    setCurrentProject(projects[0]);
+  }
+});
 
 function updateProjectData(oldProject, updatedData) {
   const newProject = { ...oldProject };
@@ -83,7 +101,7 @@ const updateProject = (newProject, oldProject) => {
   if (errors.length > 0) {
     PubSub.publish('error updating project', { 
       errors,
-      title: oldProject.title,
+      errorId: oldProject.id,
     });
     return false;
   }
@@ -99,8 +117,8 @@ const updateProject = (newProject, oldProject) => {
 };
 
 PubSub.subscribe('rename project clicked', (msg, titleData) => {
-  const { oldTitle, newTitle } = titleData;
-  const oldProject = findProjectWithTitle(oldTitle);
+  const { id, newTitle } = titleData;
+  const oldProject = findProjectWithId(id);
   const newProject = updateProjectData(oldProject, {title: newTitle});
   updateProject(newProject, oldProject);
 });
@@ -230,7 +248,7 @@ PubSub.subscribe('complete toggled', (msg, id) => {
 export {
   getCurrentProject,
   createProject,
-  removeProject,
+  removeProjectWithId,
   createTodo,
   removeTodo,
 };
