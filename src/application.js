@@ -1,4 +1,4 @@
-import { remove, forEach } from 'lodash';
+import { remove, forEach, isFinite } from 'lodash';
 import PubSub from 'pubsub-js';
 import { isValid } from 'date-fns';
 import { format, parse } from 'date-fns';
@@ -10,6 +10,7 @@ const parseDate = (str) => parse(str, 'dd/MM/yyyy', new Date());
 const projects = [];
 
 let currentProject;
+let currentProjectSort = appcsts.DEFAULT_PROJECT_SORT;
 let currentTodoSort = appcsts.DEFAULT_TODO_SORT;
 let nextProjectId = 1;
 let nextTodoId = 0;
@@ -45,6 +46,12 @@ function projectTitleTaken(newTitle, oldTitle = '') {
   return titlesToSearch.includes(newTitle);
 }
 
+function priorityIsValid(priority) {
+  if (priority === '') return false;
+  priority = +priority;
+  return isFinite(priority) && 0 <= priority && priority <= 10;
+}
+
 const generateProjectErrors = (newProject, oldProject = false) => {
   const errors = [];
   const { title } = newProject;
@@ -58,16 +65,16 @@ const generateProjectErrors = (newProject, oldProject = false) => {
 };
 
 const createProject = (data) => {
-  const { title, priority } = data;
+  const { title } = data;
   const errors = generateProjectErrors(data);
   if (errors.length > 0) {
     PubSub.publish('error creating project', errors);
     return;
   }
-  const project = { title, priority, todos: [], id: nextProjectId };
+  const project = { title, todos: [], id: nextProjectId };
   currentProject = project;
   projects.push(project);
-  PubSub.publish('project added', project);
+  sortProjects();
   setCurrentProject(project);
   nextProjectId++;
 };
@@ -86,6 +93,26 @@ PubSub.subscribe('delete project clicked', (msg, projectId) => {
     setCurrentProject(projects[0]);
   }
 });
+
+const sortProjects = () => {
+  const { method, direction } = currentProjectSort;
+  const directionFunction = (direction === 'Ascending' ? (x) => x : (x) => -x);
+  function sortingFunction(s, t) {
+    return directionFunction(appcsts.PROJECT_SORTING_FUNCTIONS[method](s, t));
+  }
+  projects.sort(sortingFunction);
+  PubSub.publish('project array changed', projects);
+};
+
+const sortTodos = () => {
+  const { method, direction } = currentTodoSort;
+  const directionFunction = (direction === 'Ascending' ? (x) => x : (x) => -x);
+  function sortingFunction(s, t) {
+    return directionFunction(appcsts.TODO_SORTING_FUNCTIONS[method](s, t));
+  }
+  currentProject.todos.sort(sortingFunction);
+  PubSub.publish('todo array changed', generateTodosTextData());
+};
 
 function updateProjectData(oldProject, updatedData) {
   const newProject = { ...oldProject };
@@ -107,7 +134,7 @@ const updateProject = (newProject, oldProject) => {
   }
   const indexInArray = projects.findIndex((project) => project.title === oldProject.title);
   projects[indexInArray] = newProject;
-  //sortProjects();
+  sortProjects();
   PubSub.publish('project renamed', {
     title: newProject.title,
     isCurrentProject,
@@ -127,22 +154,22 @@ const removeTodo = (id) => remove(currentProject.todos, (todo) => todo.id === id
 
 const findTodoWithId = (id) => currentProject.todos.find((todo) => todo.id === id);
 
-const sortTodos = () => {
-  const { method, direction } = currentTodoSort;
-  const directionFunction = (direction === 'Ascending' ? (x) => x : (x) => -x);
-  function sortingFunction(s, t) {
-    return directionFunction(appcsts.SORTING_FUNCTIONS[method](s, t));
-  }
-  currentProject.todos.sort(sortingFunction);
-  PubSub.publish('todo array changed', generateTodosTextData());
-};
+PubSub.subscribe('project sort method selected', (msg, method) => {
+  currentProjectSort.method = method;
+  sortProjects();
+});
 
-PubSub.subscribe('sort method selected', (msg, method) => {
+PubSub.subscribe('project sort direction selected', (msg, direction) => {
+  currentProjectSort.direction = direction;
+  sortProjects();
+});
+
+PubSub.subscribe('todo sort method selected', (msg, method) => {
   currentTodoSort.method = method;
   sortTodos();
 });
 
-PubSub.subscribe('sort direction selected', (msg, direction) => {
+PubSub.subscribe('todo sort direction selected', (msg, direction) => {
   currentTodoSort.direction = direction;
   sortTodos();
 });
@@ -175,14 +202,17 @@ const generateTodosTextData = () => currentProject.todos.map((todo) => todoToTex
 
 const generateTodoErrors = (todo, oldTodo = false) => {
   const errors = [];
-  const { title, dueDate } = todo;
+  const { title, dueDate, priority } = todo;
   if (title === '') {
     errors.push('You need to enter a title.');
   }
   if (todoTitleTaken(title, oldTodo ? oldTodo.title : undefined)) {
     errors.push('That title is already taken.');
   }
-  if (!isValid(dueDate)) errors.push('Invalid date format; it must have the form dd/mm/yyyy.');
+  if (!priorityIsValid(priority)) {
+    errors.push('The priority you entered is not a number from 0 to 10.');
+  }
+  if (!isValid(dueDate)) errors.push('The date you entered does not have the form dd/mm/yyyy.');
   return errors;
 };
 

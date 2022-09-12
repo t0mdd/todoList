@@ -64,7 +64,7 @@ function createErrorDisplayFor(projectId) {
   PubSub.subscribe('error updating project', (msg, errorData) => {
     const { errorId, errors } = errorData;
     if (projectId === errorId) {
-      errorDisplay.textContent = errors.join(' ');
+      errorDisplay.textContent = fns.createErrorMessage(errors);
       errorDisplay.classList.remove('hidden');
     }
   });
@@ -106,6 +106,32 @@ function createCurrentProjectHeader() {
   return element;
 }
 
+const sortDropdownLabel = fns.createElement({
+  type: 'label',
+  textContent: 'Sort by:',
+});
+
+const sortMethodDropdown = document.createElement('select');
+for (const method in appcsts.PROJECT_SORTING_FUNCTIONS) {
+  const option = document.createElement('option');
+  option.textContent = method;
+  option.addEventListener('click', () => {
+    PubSub.publish('project sort method selected', method);
+  });
+  sortMethodDropdown.appendChild(option);
+}
+
+const sortDirectionDropdown = document.createElement('select');
+const directions = ['Ascending', 'Descending'];
+for (const direction of directions) {
+  let option = document.createElement('option');
+  option.textContent = direction;
+  option.addEventListener('click', () => {
+    PubSub.publish('project sort direction selected', direction);
+  });
+  sortDirectionDropdown.appendChild(option);
+}
+
 const createProjectDisplay = () => {
   const container = document.createElement('div');
   container.classList.add('project-display');
@@ -133,13 +159,16 @@ const createProjectDisplay = () => {
     });
   }
 
-  container.append(createCurrentProjectHeader(), projectList, addNewProjectButton);
+  container.append(
+    createCurrentProjectHeader(),
+    projectList,
+    addNewProjectButton,
+    sortDropdownLabel,
+    sortMethodDropdown,
+    sortDirectionDropdown,
+  );
 
   PubSub.subscribe('project array changed', (msg, projectArray) => displayAllProjects(projectArray));
-
-  PubSub.subscribe('project added', (msg, projectData) => {
-    addProjectToContainer(projectData);
-  });
 
   return container;
 };

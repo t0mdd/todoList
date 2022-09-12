@@ -14,12 +14,12 @@ function clearContent(element) {
   element.innerHTML = '';
 }
 
-function hideElement(element) {
-  element.classList.add('hidden');
+function hideElements(elements) {
+  for (const element of arguments) element.classList.add('hidden');
 }
 
-function unhideElement(element) {
-  element.classList.remove('hidden');
+function showElements(elements) {
+  for (const element of arguments) element.classList.remove('hidden');
 }
 
 function createInputFieldLabels(formStructure) {
@@ -50,12 +50,23 @@ function createErrorDisplay() {
   });
 }
 
+function createErrorMessage(errors) {
+  return errors.join(' ');
+}
+
+function priorityToColour(priority) {
+  const intensity = priority/10;
+  return `rgba(255,0,0,${intensity})`;
+}
+
 export {
   createElement,
-  hideElement,
-  unhideElement,
+  createErrorMessage,
+  hideElements,
+  showElements,
   createInputFieldLabels,
   createInputFieldElements,
   clearContent,
   createErrorDisplay,
+  priorityToColour,
 };

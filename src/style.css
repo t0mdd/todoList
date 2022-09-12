@@ -35,9 +35,8 @@ body {
   font-size: 70px;
 }
 
-.todo-container {
+.todo-element-container {
   width: 500px;
-  background-color: aliceblue;
   display: flex;
   flex-direction: column;
 }

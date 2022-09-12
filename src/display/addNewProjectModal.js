@@ -27,12 +27,11 @@ const errorDisplay = fns.createElement({
 });
 
 PubSub.subscribe('error creating project', (msg, errorText) => {
-  errorDisplay.textContent = errorText;
+  errorDisplay.textContent = fns.createErrorMessage(errorText);
 });
 
 const getInputValues = () => ({
   title: inputFieldElements.title.value,
-  priority: inputFieldElements.priority.value,
 });
 
 const clearInputValues = () => forIn(inputFieldElements, (input) => input.value = '');
@@ -45,7 +44,7 @@ const clearEverything = () => {
 
 const removeForm = () => {
   clearEverything();
-  fns.hideElement(addNewProjectModal);
+  fns.hideElements(addNewProjectModal);
   PubSub.publish('add new project form removed');
 };
 
@@ -71,7 +70,7 @@ for(const fieldName in appcsts.ADD_NEW_PROJECT_FORM_LABEL_STRUCTURE) {
 
 addNewProjectFormContainer.append(errorDisplay, createProjectButton, discardButton);
 
-PubSub.subscribe('add new project button clicked', () => fns.unhideElement(addNewProjectModal));
-PubSub.subscribe('project added', removeForm);
+PubSub.subscribe('add new project button clicked', () => fns.showElements(addNewProjectModal));
+PubSub.subscribe('project array changed', removeForm);
 
 export default addNewProjectModal;

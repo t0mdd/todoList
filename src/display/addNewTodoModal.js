@@ -27,15 +27,14 @@ const errorDisplay = fns.createElement({
 });
 
 PubSub.subscribe('error creating todo', (msg, errors) => {
-  errorDisplay.textContent = '';
-  errors.forEach((err) => errorDisplay.textContent += `${err} `);
+  errorDisplay.textContent = fns.createErrorMessage(errors);
 });
 
 const getInputValues = () => ({
   title: inputFieldElements.title.value,
   dueDate: inputFieldElements.dueDate.value,
-  Priority: inputFieldElements.priority.value,
-  Description: inputFieldElements.description.value,
+  priority: inputFieldElements.priority.value,
+  description: inputFieldElements.description.value,
 });
 
 const clearInputValues = () => forIn(inputFieldElements, (input) => input.value = '');
@@ -48,7 +47,7 @@ const clearEverything = () => {
 
 const removeForm = () => {
   clearEverything();
-  fns.hideElement(addNewTodoModal);
+  fns.hideElements(addNewTodoModal);
   PubSub.publish('add todo form removed');
 };
 
@@ -76,7 +75,7 @@ addNewTodoModal.appendChild(addNewTodoFormContainer);
 appendInputFields();
 addNewTodoFormContainer.append(errorDisplay, createTodoButton, discardButton);
 
-PubSub.subscribe('add new todo clicked', () => fns.unhideElement(addNewTodoModal));
+PubSub.subscribe('add new todo clicked', () => fns.showElements(addNewTodoModal));
 PubSub.subscribe('todo added', removeForm);
 
 export default addNewTodoModal;

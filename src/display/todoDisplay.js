@@ -28,23 +28,20 @@ const addNewTodoButton = fns.createElement({
   clickEventListener: () => PubSub.publish('add new todo clicked'),
 });
 
-document.body.appendChild(addNewTodoButton);
-
 const sortDropdownLabel = fns.createElement({
   type: 'label',
   textContent: 'Sort by:',
 });
 
 const sortMethodDropdown = document.createElement('select');
-for (const method in appcsts.SORTING_FUNCTIONS) {
+for (const method in appcsts.TODO_SORTING_FUNCTIONS) {
   const option = document.createElement('option');
   option.textContent = method;
   option.addEventListener('click', () => {
-    PubSub.publish('sort method selected', method);
+    PubSub.publish('todo sort method selected', method);
   });
   sortMethodDropdown.appendChild(option);
 }
-document.body.appendChild(sortMethodDropdown);
 
 const sortDirectionDropdown = document.createElement('select');
 const directions = ['Ascending', 'Descending'];
@@ -52,16 +49,20 @@ for (const direction of directions) {
   let option = document.createElement('option');
   option.textContent = direction;
   option.addEventListener('click', () => {
-    PubSub.publish('sort direction selected', direction);
+    PubSub.publish('todo sort direction selected', direction);
   });
   sortDirectionDropdown.appendChild(option);
 }
 
-document.body.appendChild(sortDirectionDropdown);
-
 const todosContainer = fns.createElement({
   type: 'div',
   classList: 'todos-container',
+});
+
+const createLabel = (textContent) => fns.createElement({
+  type: 'label',
+  classList: 'todo-label',
+  textContent,
 });
 
 const createTitle = (textContent) => fns.createElement({
@@ -88,6 +89,12 @@ const createDescription = (textContent) => fns.createElement({
   textContent,
 });
 
+const createPriorityDisplay = (priority) => fns.createElement({
+  type: 'p',
+  classList: 'priority-display hidden',
+  textContent: priority,
+});
+
 const createEditButton = () => fns.createElement({
   type: 'button',
   classList: 'editButton',
@@ -112,63 +119,91 @@ const createDeleteButton = () => fns.createElement({
   textContent: 'Delete',
 });
 
+const createTodoElementContainer = (id) => fns.createElement({
+  type: 'div',
+  classList: 'todo-element-container',
+  id: `todo-${id}`,
+});
+
 const createTodoElement = (todo) => {
   let lastSnapshot;
   let editMode = false;
   let expanded = false;
   let isComplete = todo.complete;
 
-  const { id } = todo;
+  const { id, title, dueDate, description, priority } = todo;
 
-  const container = document.createElement('div');
-  const title = createTitle(todo.title);
+  const container = createTodoElementContainer(id);
+  container.style.backgroundColor = fns.priorityToColour(priority);
+
+  const titleDisplay = createTitle(title);
   const completeMark = createCompleteMark(isComplete);
-  const dueDate = createDueDate(todo.dueDate);
-  const description = createDescription(todo.description);
+  const dueDateLabel = createLabel('Due date:');
+  const dueDateDisplay = createDueDate(dueDate);
+  const descriptionLabel = createLabel('Description:');
+  const descriptionDisplay = createDescription(description);
+  const priorityLabel = createLabel('Priority:');
+  const priorityDisplay = createPriorityDisplay(priority);
   const errorDisplay = fns.createErrorDisplay();
   const editButton = createEditButton();
   const discardChangesButton = createDiscardChangesButton();
   const expandButton = createExpandButton();
   const deleteButton = createDeleteButton();
 
-  const editableElements = {
-    title,
-    dueDate,
-    description,
-  };
+  fns.hideElements(descriptionLabel, priorityLabel);
+
+  const editableElements = [
+    titleDisplay,
+    dueDateDisplay,
+    descriptionDisplay,
+    priorityDisplay,
+  ];
+
+  const hideableElements = [
+    descriptionLabel,
+    descriptionDisplay,
+    priorityLabel,
+    priorityDisplay,
+    discardChangesButton,
+    errorDisplay,
+  ];
 
   const grabEditableData = () => ({
-    title: title.textContent,
-    dueDate: dueDate.textContent,
-    description: description.textContent,
+    title: titleDisplay.textContent,
+    dueDate: dueDateDisplay.textContent,
+    description: descriptionDisplay.textContent,
+    priority: priorityDisplay.textContent,
   });
 
+  const changeContentEditableStatus = (newStatus) => {
+    for (const element of editableElements) element.contentEditable = newStatus;
+  };
+
+  function hideHideableElements() {
+    fns.hideElements(...hideableElements);
+  }
+
+  function showHideableElements() {
+    fns.showElements(...hideableElements);
+  }
+
   const resetToLastSnapshot = () => {
-    title.textContent = lastSnapshot.title;
-    dueDate.textContent = lastSnapshot.dueDate;
-    description.textContent = lastSnapshot.description;
+    titleDisplay.textContent = lastSnapshot.title;
+    dueDateDisplay.textContent = lastSnapshot.dueDate;
+    descriptionDisplay.textContent = lastSnapshot.description;
+    priorityDisplay.textContent = lastSnapshot.priority;
     changeContentEditableStatus(false);
     editMode = false;
     editButton.textContent = notEditingText;
-    discardChangesButton.classList.add('hidden');
-    errorDisplay.textContent = '';
-    errorDisplay.classList.add('hidden');
-  };
-
-  const changeContentEditableStatus = (newStatus) => {
-    for (const key in editableElements) {
-      editableElements[key].contentEditable = newStatus;
-    }
+    fns.clearContent(errorDisplay);
+    hideHideableElements();
   };
 
   const triggerExpandEvents = () => {
     expandButton.textContent = expandText(expanded);
-    if (expanded) description.classList.remove('hidden');
-    else description.classList.add('hidden');
+    if (expanded) fns.showElements(descriptionLabel, descriptionDisplay);
+    else fns.hideElements(descriptionLabel, descriptionDisplay);
   };
-
-  container.classList.add('todo-container');
-  container.id = `todo-${id}`;
 
   completeMark.addEventListener('click', () => {
     isComplete = !isComplete;
@@ -186,7 +221,7 @@ const createTodoElement = (todo) => {
       expanded = true;
       editMode = true;
       editButton.textContent = editingText;
-      discardChangesButton.classList.remove('hidden');
+      showHideableElements();
       triggerExpandEvents();
     }
   });
@@ -194,31 +229,27 @@ const createTodoElement = (todo) => {
   PubSub.subscribe('error updating todo', (msg, data) => {
     const { editedTodoId, errors } = data;
     if (id !== editedTodoId) return;
-    errorDisplay.classList.remove('hidden');
-    errorDisplay.textContent = '';
-    for (const error of errors) {
-      errorDisplay.textContent += `${error} `;
-    }
+    errorDisplay.textContent = fns.createErrorMessage(errors);
   });
 
-  discardChangesButton.addEventListener('click', () => {
-    resetToLastSnapshot();
-  });
+  discardChangesButton.addEventListener('click', () => resetToLastSnapshot());
 
   expandButton.addEventListener('click', () => {
     expanded = !expanded;
     triggerExpandEvents();
   });
 
-  deleteButton.addEventListener('click', () => {
-    PubSub.publish('delete clicked', id);
-  });
+  deleteButton.addEventListener('click', () => PubSub.publish('delete clicked', id));
 
   container.append(
-    title,
+    titleDisplay,
     completeMark,
-    dueDate,
-    description,
+    dueDateLabel,
+    dueDateDisplay,
+    descriptionLabel,
+    descriptionDisplay,
+    priorityLabel,
+    priorityDisplay,
     errorDisplay,
     editButton,
     discardChangesButton,
@@ -248,7 +279,7 @@ const createTodoDisplay = () => {
     type: 'div',
     classList: 'todo-display',
   });
-  
+
   container.append(
     todosContainer,
     addNewTodoButton,

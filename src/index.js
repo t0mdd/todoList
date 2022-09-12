@@ -21,13 +21,13 @@ application.createProject(appcsts.INITIAL_PROJECT_DATA);
 application.createTodo({
   title: 'Put togs in washer',
   description: 'Just the darks',
-  priority: 'high',
+  priority: '9',
   dueDate: '27/6/2022',
 });
 
 application.createTodo({
   title: 'Put fish in pie',
   description: 'Janet has requested my services',
-  priority: 'low',
+  priority: '3',
   dueDate: '28/6/2022',
 });
