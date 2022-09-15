@@ -80,9 +80,9 @@ function createProjectRow(projectData) {
   });
   const link = createLinkToProject(title, id);
   const errorDisplay = createErrorDisplayFor(id);
-  const renameButton = createRenameButton(id);
-  const deleteButton = createDeleteButton(id);
-  container.append(link, errorDisplay, renameButton, deleteButton);
+  const buttons = fns.createContainer('project-element-buttons-container');
+  buttons.append(createRenameButton(id), createDeleteButton(id));
+  container.append(link, errorDisplay, buttons);
   return container;
 }
 
@@ -132,6 +132,19 @@ for (const direction of directions) {
   sortDirectionDropdown.appendChild(option);
 }
 
+const projectOptionsContainer = fns.createContainer('project-options-container');
+const projectSortOptionsContainer = fns.createContainer('sort-options-container');
+projectSortOptionsContainer.append(sortDropdownLabel, sortMethodDropdown, sortDirectionDropdown);
+
+const addNewProjectButton = fns.createElement({
+  type: 'button',
+  classList: 'add-new-project-button',
+  textContent: 'Add new project',
+  clickEventListener: () => PubSub.publish('add new project button clicked'),
+});
+
+projectOptionsContainer.append(projectSortOptionsContainer, addNewProjectButton);
+
 const createProjectDisplay = () => {
   const container = document.createElement('div');
   container.classList.add('project-display');
@@ -139,13 +152,6 @@ const createProjectDisplay = () => {
   const projectList = fns.createElement({
     type: 'div',
     classList: 'project-list',
-  });
-
-  const addNewProjectButton = fns.createElement({
-    type: 'button',
-    classList: 'add-new-project-button',
-    textContent: 'Add new project',
-    clickEventListener: () => PubSub.publish('add new project button clicked'),
   });
 
   function addProjectToContainer(projectData) {
@@ -162,10 +168,7 @@ const createProjectDisplay = () => {
   container.append(
     createCurrentProjectHeader(),
     projectList,
-    addNewProjectButton,
-    sortDropdownLabel,
-    sortMethodDropdown,
-    sortDirectionDropdown,
+    projectOptionsContainer,
   );
 
   PubSub.subscribe('project array changed', (msg, projectArray) => displayAllProjects(projectArray));

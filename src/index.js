@@ -10,7 +10,6 @@ import * as appcsts from './appcsts.js';
 
 document.body.append(
   projectDisplay.createProjectDisplay(),
-  //projectDisplay.createCurrentProjectHeader(),
   createTodoDisplay(),
   addNewProjectModal,
   addNewTodoModal,
@@ -21,7 +20,7 @@ application.createProject(appcsts.INITIAL_PROJECT_DATA);
 application.createTodo({
   title: 'Put togs in washer',
   description: 'Just the darks',
-  priority: '9',
+  priority: '7',
   dueDate: '27/6/2022',
 });
 

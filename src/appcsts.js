@@ -20,7 +20,7 @@ const ADD_NEW_TODO_FORM_ELEMENT_STRUCTURE = {
 const ADD_NEW_TODO_FORM_LABEL_STRUCTURE = {
   title: 'Title',
   priority: 'Priority; this must be a number from 0 (least important) to 10 (most important)',
-  dueDate: 'Due Date; in the form dd/mm/yyyy',
+  dueDate: 'Due Date; in the form dd/mm/yyyy. This will be set to today\'s date if nothing is entered.',
   description: 'Description',
 };
 

@@ -5,6 +5,17 @@
 
 body {
   display: flex;
+  font-family: 'Courier New', Courier, monospace;
+  background-color: rgb(255, 248, 253);
+}
+
+.current-project-header {
+  /* background-color: rgba(127, 255, 212, 0.349); */
+  text-shadow: 2px 2px 0 rgba(221, 191, 255, 0.848);
+}
+
+.project-list {
+  /* background-color: rgba(156, 243, 255, 0.349); */
 }
 
 .project-display {
@@ -27,7 +38,7 @@ body {
 
 .todo-title {
   font-size: 1.5rem;
-  color: black;
+  font-weight: 900;
 }
 
 .wood {
@@ -37,12 +48,85 @@ body {
 
 .todo-element-container {
   width: 500px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
+  border: 3px solid rgb(178, 77, 166);
+  border-radius: 20px;
+  color: rgb(38, 17, 79);
 }
 
-.edit , .expand{
-  width: max-content;
+.editing, .being-renamed {
+  border: 1px solid rgb(171, 240, 255);
+  border-radius: 3px;
+}
+
+[contenteditable]:focus {
+  outline: 0px solid transparent;
+}
+
+.todo-top-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.todo-information-container {
+  display: grid;
+  grid-template-columns: 12ch 1fr; /* the first value is the max length of the inner labels*/
+  gap: 5px 10px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+
+.todo-element-buttons-container ,
+.project-element-buttons-container {
+  display: flex;
+  column-gap: 5px;
+}
+
+button {
+  border-radius: 5px;
+  padding: 1px 5px;
+  cursor: pointer;
+}
+
+.todo-element-buttons-container button,
+.project-element-buttons-container button {
+  background-color: rgba(198, 148, 221, 0.603);
+  border: 2px solid rgb(255, 209, 249);
+}
+
+.add-new-todo-button,
+.add-new-project-button {
+  background-color: rgba(225, 161, 255, 0.381);
+  border: 2px solid rgba(182, 133, 255, 0.395);
+}
+
+.todos-container {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.sort-options-container select {
+  background-color: rgba(221, 160, 221, 0.29);
+  border: 2px solid rgba(169, 89, 160, 0.171);
+  border-radius: 5px;
+}
+
+.sort-options-container {
+  display: flex;
+  column-gap: 5px;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
 .hidden , 
@@ -50,8 +134,9 @@ body {
   display: none;
 }
 
-.complete-symbol {
-  width: max-content;
+.complete-mark {
+  cursor: pointer;
+  font-size: 1.5rem;
 }
 
 .modal {

@@ -24,6 +24,7 @@ const emptyProjectMessageElement = fns.createElement({
 
 const addNewTodoButton = fns.createElement({
   type: 'button',
+  classList: 'add-new-todo-button',
   textContent: 'Add new todo',
   clickEventListener: () => PubSub.publish('add new todo clicked'),
 });
@@ -46,7 +47,7 @@ for (const method in appcsts.TODO_SORTING_FUNCTIONS) {
 const sortDirectionDropdown = document.createElement('select');
 const directions = ['Ascending', 'Descending'];
 for (const direction of directions) {
-  let option = document.createElement('option');
+  const option = document.createElement('option');
   option.textContent = direction;
   option.addEventListener('click', () => {
     PubSub.publish('todo sort direction selected', direction);
@@ -54,10 +55,7 @@ for (const direction of directions) {
   sortDirectionDropdown.appendChild(option);
 }
 
-const todosContainer = fns.createElement({
-  type: 'div',
-  classList: 'todos-container',
-});
+const todosContainer = fns.createContainer('todos-container')
 
 const createLabel = (textContent) => fns.createElement({
   type: 'label',
@@ -72,8 +70,8 @@ const createTitle = (textContent) => fns.createElement({
 });
 
 const createCompleteMark = (isComplete) => fns.createElement({
-  type: 'b',
-  classList: 'complete-symbol',
+  type: 'p',
+  classList: 'complete-mark',
   textContent: completeMarkContent(isComplete),
 });
 
@@ -97,7 +95,7 @@ const createPriorityDisplay = (priority) => fns.createElement({
 
 const createEditButton = () => fns.createElement({
   type: 'button',
-  classList: 'editButton',
+  classList: 'edit-button',
   textContent: notEditingText,
 });
 
@@ -175,9 +173,17 @@ const createTodoElement = (todo) => {
     priority: priorityDisplay.textContent,
   });
 
-  const changeContentEditableStatus = (newStatus) => {
+  function changeContentEditableStatus(newStatus) {
     for (const element of editableElements) element.contentEditable = newStatus;
-  };
+  }
+
+  function addEditingClasses() {
+    for (const element of editableElements) element.classList.add('editing');
+  }
+
+  function removeEditingClasses() {
+    for (const element of editableElements) element.classList.remove('editing');
+  }
 
   function hideHideableElements() {
     fns.hideElements(...hideableElements);
@@ -195,8 +201,10 @@ const createTodoElement = (todo) => {
     changeContentEditableStatus(false);
     editMode = false;
     editButton.textContent = notEditingText;
+    expandButton.textContent = notExpandedText;
     fns.clearContent(errorDisplay);
     hideHideableElements();
+    removeEditingClasses();
   };
 
   const triggerExpandEvents = () => {
@@ -222,6 +230,7 @@ const createTodoElement = (todo) => {
       editMode = true;
       editButton.textContent = editingText;
       showHideableElements();
+      addEditingClasses();
       triggerExpandEvents();
     }
   });
@@ -241,21 +250,37 @@ const createTodoElement = (todo) => {
 
   deleteButton.addEventListener('click', () => PubSub.publish('delete clicked', id));
 
-  container.append(
-    titleDisplay,
-    completeMark,
+  const topLine = fns.createContainer('todo-top-row');
+
+  topLine.append(titleDisplay, completeMark);
+
+  const todoInformationContainer = fns.createContainer('todo-information-container');
+
+  todoInformationContainer.append(
     dueDateLabel,
     dueDateDisplay,
     descriptionLabel,
     descriptionDisplay,
     priorityLabel,
     priorityDisplay,
-    errorDisplay,
+  );
+
+  const buttonsContainer = fns.createContainer('todo-element-buttons-container');
+
+  buttonsContainer.append(
     editButton,
     discardChangesButton,
     expandButton,
     deleteButton,
   );
+
+  container.append(
+    topLine,
+    todoInformationContainer,
+    errorDisplay,
+    buttonsContainer,
+  );
+
   return container;
 };
 
@@ -274,23 +299,23 @@ const removeTodoElement = (id) => {
   todosContainer.removeChild(document.querySelector(`#todo-${id}`));
 };
 
-const createTodoDisplay = () => {
-  const container = fns.createElement({
-    type: 'div',
-    classList: 'todo-display',
-  });
+const todoOptionsContainer = fns.createContainer('todo-options-container');
+const todoSortOptionsContainer = fns.createContainer('sort-options-container');
+todoSortOptionsContainer.append(sortDropdownLabel, sortMethodDropdown, sortDirectionDropdown);
 
-  container.append(
+todoOptionsContainer.append(todoSortOptionsContainer, addNewTodoButton);
+
+const createTodoDisplay = () => {
+  const todoDisplayContainer = fns.createContainer('todo-display');
+
+  todoDisplayContainer.append(
     todosContainer,
-    addNewTodoButton,
-    sortDropdownLabel,
-    sortMethodDropdown,
-    sortDirectionDropdown,
+    todoOptionsContainer,
   );
 
-  PubSub.subscribe('no projects', (msg) => container.classList.add('hidden'));
-  PubSub.subscribe('project added', (msg) => container.classList.remove('hidden'));
-  return container;
+  PubSub.subscribe('no projects', (msg) => todoDisplayContainer.classList.add('hidden'));
+  PubSub.subscribe('project added', (msg) => todoDisplayContainer.classList.remove('hidden'));
+  return todoDisplayContainer;
 };
 
 export default createTodoDisplay;

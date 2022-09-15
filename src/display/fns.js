@@ -10,6 +10,13 @@ function createElement(data) {
   return element;
 }
 
+function createContainer(classList) {
+  return createElement({
+    type: 'div',
+    classList,
+  });
+}
+
 function clearContent(element) {
   element.innerHTML = '';
 }
@@ -55,12 +62,13 @@ function createErrorMessage(errors) {
 }
 
 function priorityToColour(priority) {
-  const intensity = priority/10;
+  const intensity = priority/15;
   return `rgba(255,0,0,${intensity})`;
 }
 
 export {
   createElement,
+  createContainer,
   createErrorMessage,
   hideElements,
   showElements,
