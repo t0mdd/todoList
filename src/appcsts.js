@@ -7,7 +7,7 @@ const INITIAL_PROJECT_DATA = {
   id: 0,
 };
 
-const DEFAULT_PROJECT_SORT = { method: 'Title (alphabetical)', direction: 'Ascending' };
+const DEFAULT_PROJECT_SORT = { method: 'Time of creation', direction: 'Ascending' };
 const DEFAULT_TODO_SORT = { method: 'Time of creation', direction: 'Ascending' };
 
 const ADD_NEW_TODO_FORM_ELEMENT_STRUCTURE = {
@@ -20,7 +20,7 @@ const ADD_NEW_TODO_FORM_ELEMENT_STRUCTURE = {
 const ADD_NEW_TODO_FORM_LABEL_STRUCTURE = {
   title: 'Title',
   priority: 'Priority; this must be a number from 0 (least important) to 10 (most important)',
-  dueDate: 'Due Date; in the form dd/mm/yyyy. This will be set to today\'s date if nothing is entered.',
+  dueDate: 'Due Date; in the form dd/mm/yyyy. This will be set to today\'s date if nothing is entered',
   description: 'Description',
 };
 

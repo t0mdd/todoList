@@ -1,12 +1,30 @@
 * {
-  body: 0;
+  padding: 0;
   margin: 0;
+  box-sizing: border-box;
+}
+
+html {
+  height: 100vh;
 }
 
 body {
-  display: flex;
+  height: 100%;
   font-family: 'Courier New', Courier, monospace;
   background-color: rgb(255, 248, 253);
+  padding: 5px;
+}
+
+.display-container {
+  display: flex;
+  gap: 40px;
+  padding-bottom: 5px;
+  height: 100%;
+}
+
+.todo-display {
+  flex: 1;
+  height: 100%;
 }
 
 .current-project-header {
@@ -18,10 +36,6 @@ body {
   /* background-color: rgba(156, 243, 255, 0.349); */
 }
 
-.project-display {
-  flex: 1;
-}
-
 .project-link:hover {
   color: red;
   cursor: pointer;
@@ -30,10 +44,6 @@ body {
 .project-link.being-renamed {
   color: black;
   cursor: auto;
-}
-
-.todo-display {
-  flex: 5;
 }
 
 .todo-title {
@@ -47,7 +57,8 @@ body {
 }
 
 .todo-element-container {
-  width: 500px;
+  width: min(500px, 100%);
+  height: max-content;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -57,7 +68,7 @@ body {
 }
 
 .editing, .being-renamed {
-  border: 1px solid rgb(171, 240, 255);
+  border: 1px solid rgb(0, 138, 169);
   border-radius: 3px;
 }
 
@@ -92,7 +103,8 @@ button {
 }
 
 .todo-element-buttons-container button,
-.project-element-buttons-container button {
+.project-element-buttons-container button, 
+.modal-content-container button {
   background-color: rgba(198, 148, 221, 0.603);
   border: 2px solid rgb(255, 209, 249);
 }
@@ -104,16 +116,40 @@ button {
 }
 
 .todos-container {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
   gap: 5px;
   margin-bottom: 10px;
 }
 
+.todo-display {
+  flex: 1;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-display {
+  padding: 5px;
+  border-right: 2px dotted rgb(73, 32, 148);
+}
+
 .project-list {
+  border-top: 2px dotted rgb(73, 32, 148);
+  border-bottom: 2px dotted rgb(73, 32, 148);
+  padding: 10px 0;
   display: flex;
   flex-direction: column;
   gap: 5px;
   margin-bottom: 10px;
+}
+
+.project-pane-row-container {
+  padding: 0 0 5px 0;
+}
+
+.project-pane-row-container:not(:last-child) {
+  border-bottom: 2px dotted rgb(219, 175, 219);
 }
 
 .sort-options-container select {
@@ -122,6 +158,9 @@ button {
   border-radius: 5px;
 }
 
+.sort-options-container label {
+  width: max-content;
+}
 .sort-options-container {
   display: flex;
   column-gap: 5px;
@@ -154,8 +193,50 @@ button {
 }
 
 .modal-content-container {
-  background-color: rgb(217, 164, 124);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto;
+  width: max(25%, 400px);
+  background-color: rgb(207, 206, 238);
   padding: 10px;
   border-radius: 10px;
-  border: 5px solid rgb(251, 255, 11);
+  border: 5px solid rgb(115, 73, 149);
+}
+
+.modal-content-container button {
+  justify-self: end;
+  width: 13ch
+}
+
+.input-field, .input-field-label, .error-display {
+  grid-column-start: 1;
+  grid-column-end: -1;
+}
+
+.input-field {
+  width: 100%;
+  border: 2px dashed rgb(248, 217, 254);
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.input-field:focus {
+  border-style: groove;
+  outline: none;
+}
+
+.input-field-label {
+  color: rgb(38, 17, 79);
+  margin-bottom: 5px;
+}
+
+.input-field-label::after {
+  content: ':';
+}
+
+textarea {
+  padding: 0;
+  margin: 0;
+  resize: vertical;
+  width: 100%;
 }

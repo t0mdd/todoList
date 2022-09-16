@@ -176,7 +176,4 @@ const createProjectDisplay = () => {
   return container;
 };
 
-export {
-  createProjectDisplay,
-  createCurrentProjectHeader,
-};
+export default createProjectDisplay;

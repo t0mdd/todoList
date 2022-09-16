@@ -4,13 +4,16 @@ import PubSub from 'pubsub-js';
 import * as application from './application.js';
 import addNewTodoModal from './display/addNewTodoModal.js';
 import addNewProjectModal from './display/addNewProjectModal.js';
-import * as projectDisplay from './display/projectDisplay.js';
+import createProjectDisplay from './display/projectDisplay.js';
 import createTodoDisplay from './display/todoDisplay.js';
 import * as appcsts from './appcsts.js';
+import * as displayfns from './display/fns.js';
+
+const displayContainer = displayfns.createContainer('display-container');
+displayContainer.append(createProjectDisplay(), createTodoDisplay());
 
 document.body.append(
-  projectDisplay.createProjectDisplay(),
-  createTodoDisplay(),
+  displayContainer,
   addNewProjectModal,
   addNewTodoModal,
 );
