@@ -19,9 +19,9 @@ const ADD_NEW_TODO_FORM_ELEMENT_STRUCTURE = {
 
 const ADD_NEW_TODO_FORM_LABEL_STRUCTURE = {
   title: 'Title',
-  priority: 'Priority; this must be a number from 0 (least important) to 10 (most important)',
-  dueDate: 'Due Date; in the form dd/mm/yyyy. This will be set to today\'s date if nothing is entered',
-  description: 'Description',
+  priority: 'Priority (from 0 to 10)',
+  dueDate: 'Due Date in the form dd/mm/yyyy (this will be set to today\'s date if empty)',
+  description: 'Description (optional)',
 };
 
 const ADD_NEW_PROJECT_FORM_ELEMENT_STRUCTURE = {
@@ -48,7 +48,7 @@ const TODO_SORTING_FUNCTIONS = {
     if (todo1.title.toLowerCase() === todo2.title.toLowerCase()) return 0;
     return 1;
   },
-  Date(todo1, todo2) {
+  'Due Date': (todo1, todo2) => {
     const [dueDate1, dueDate2] = [todo1.dueDate, todo2.dueDate];
     if (isBefore(dueDate1, dueDate2)) return -1;
     if (isEqual(dueDate1, dueDate2)) return 0;

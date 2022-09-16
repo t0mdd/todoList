@@ -21,15 +21,15 @@ document.body.append(
 application.createProject(appcsts.INITIAL_PROJECT_DATA);
 
 application.createTodo({
-  title: 'Put togs in washer',
-  description: 'Just the darks',
-  priority: '7',
+  title: 'A title',
+  description: 'A description',
+  priority: '5',
   dueDate: '27/6/2022',
 });
 
 application.createTodo({
-  title: 'Put fish in pie',
-  description: 'Janet has requested my services',
-  priority: '3',
-  dueDate: '28/6/2022',
+  title: 'Feel free to delete me',
+  description: "I'm just taking up space here",
+  priority: '7',
+  dueDate: '22/7/2027',
 });

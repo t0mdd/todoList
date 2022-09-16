@@ -77,6 +77,7 @@ const createProject = (data) => {
   sortProjects();
   setCurrentProject(project);
   nextProjectId++;
+  PubSub.publish('project added');
 };
 
 PubSub.subscribe('create project button clicked', (msg, data) => createProject(data));

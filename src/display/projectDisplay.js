@@ -154,6 +154,8 @@ const createProjectDisplay = () => {
     classList: 'project-list',
   });
 
+  PubSub.subscribe('no projects', (msg) => projectList.textContent = appcsts.NO_PROJECTS_MESSAGE);
+  
   function addProjectToContainer(projectData) {
     projectList.appendChild(createProjectRow(projectData));
   }

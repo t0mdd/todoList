@@ -67,6 +67,10 @@ body {
   color: rgb(38, 17, 79);
 }
 
+.todo-title, .description  {
+  overflow: scroll;
+}
+
 .editing, .being-renamed {
   border: 1px solid rgb(0, 138, 169);
   border-radius: 3px;
