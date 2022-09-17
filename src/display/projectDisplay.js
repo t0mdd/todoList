@@ -33,7 +33,11 @@ function createDeleteButton(projectId) {
     type: 'button',
     classList: 'delete-button',
     textContent: 'Delete',
-    clickEventListener: () => PubSub.publish('delete project clicked', projectId),
+    clickEventListener: () => {
+      if (confirm('To confirm deletion, click OK.')) {
+        PubSub.publish('delete project clicked', projectId);
+      }
+    },
   });
 
   return button;

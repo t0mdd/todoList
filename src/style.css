@@ -158,6 +158,7 @@ button {
   background-color: rgba(221, 160, 221, 0.29);
   border: 2px solid rgba(169, 89, 160, 0.171);
   border-radius: 5px;
+  cursor: pointer;
 }
 
 .sort-options-container label {

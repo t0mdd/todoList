@@ -9,14 +9,14 @@ const INITIAL_PROJECT_DATA = {
 
 const INITIAL_TODOS_DATA = [
   {
-    title: 'A title',
-    description: 'A description',
+    title: 'Title',
+    description: 'Buuuh',
     priority: '5',
     dueDate: '22/2/2022',
   },
   {
     title: 'Feel free to delete me',
-    description: "I'm just taking up space here",
+    description: 'I am just taking up space here',
     priority: '7',
     dueDate: '30/3/2023',
   },
@@ -72,6 +72,8 @@ const TODO_SORTING_FUNCTIONS = {
   Priority: (todo1, todo2) => todo1.priority - todo2.priority,
 };
 
+const CONFIRM_DELETION_MESSAGE = 'To confirm deletion, click OK.';
+
 export {
   NO_PROJECTS_MESSAGE,
   INITIAL_PROJECT_DATA,
@@ -84,4 +86,5 @@ export {
   ADD_NEW_TODO_FORM_LABEL_STRUCTURE,
   ADD_NEW_PROJECT_FORM_ELEMENT_STRUCTURE,
   ADD_NEW_PROJECT_FORM_LABEL_STRUCTURE,
+  CONFIRM_DELETION_MESSAGE,
 };

@@ -66,6 +66,10 @@ function priorityToColour(priority) {
   return `rgba(255,0,0,${intensity})`;
 }
 
+function runIfConfirmed(functionToRun) {
+  if (confirm(appcsts.CONFIRM_DELETION_MESSAGE)) functionToRun();
+}
+
 export {
   createElement,
   createContainer,
@@ -77,4 +81,5 @@ export {
   clearContent,
   createErrorDisplay,
   priorityToColour,
+  runIfConfirmed,
 };

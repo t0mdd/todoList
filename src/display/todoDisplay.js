@@ -254,7 +254,11 @@ const createTodoElement = (todo) => {
     triggerExpandEvents();
   });
 
-  deleteButton.addEventListener('click', () => PubSub.publish('delete clicked', id));
+  deleteButton.addEventListener('click', () => {
+    if (confirm('To confirm deletion, click OK.')) {
+      PubSub.publish('delete clicked', id);
+    }
+  });
 
   const topLine = fns.createContainer('todo-top-row');
 
