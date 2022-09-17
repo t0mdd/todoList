@@ -7,6 +7,21 @@ const INITIAL_PROJECT_DATA = {
   id: 0,
 };
 
+const INITIAL_TODOS_DATA = [
+  {
+    title: 'A title',
+    description: 'A description',
+    priority: '5',
+    dueDate: '22/2/2022',
+  },
+  {
+    title: 'Feel free to delete me',
+    description: "I'm just taking up space here",
+    priority: '7',
+    dueDate: '30/3/2023',
+  },
+];
+
 const DEFAULT_PROJECT_SORT = { method: 'Time of creation', direction: 'Ascending' };
 const DEFAULT_TODO_SORT = { method: 'Time of creation', direction: 'Ascending' };
 
@@ -60,6 +75,7 @@ const TODO_SORTING_FUNCTIONS = {
 export {
   NO_PROJECTS_MESSAGE,
   INITIAL_PROJECT_DATA,
+  INITIAL_TODOS_DATA,
   DEFAULT_PROJECT_SORT,
   DEFAULT_TODO_SORT,
   PROJECT_SORTING_FUNCTIONS,

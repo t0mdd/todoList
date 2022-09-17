@@ -28,12 +28,7 @@ body {
 }
 
 .current-project-header {
-  /* background-color: rgba(127, 255, 212, 0.349); */
   text-shadow: 2px 2px 0 rgba(221, 191, 255, 0.848);
-}
-
-.project-list {
-  /* background-color: rgba(156, 243, 255, 0.349); */
 }
 
 .project-link:hover {
@@ -47,6 +42,7 @@ body {
 }
 
 .todo-title {
+  width: 100%;
   font-size: 1.5rem;
   font-weight: 900;
 }
@@ -67,7 +63,7 @@ body {
   color: rgb(38, 17, 79);
 }
 
-.todo-title, .description  {
+.todo-title, .description, .current-project-header, .project-link  {
   overflow: scroll;
 }
 
@@ -127,13 +123,15 @@ button {
 }
 
 .todo-display {
-  flex: 1;
+  flex: 5;
   padding: 5px;
   display: flex;
   flex-direction: column;
 }
 
 .project-display {
+  flex: 1;
+  width: max(450px, 20%);
   padding: 5px;
   border-right: 2px dotted rgb(73, 32, 148);
 }
@@ -210,6 +208,11 @@ button {
 .modal-content-container button {
   justify-self: end;
   width: 13ch
+}
+
+.error-display {
+  font-weight: 900;
+  margin-bottom: 5px;
 }
 
 .input-field, .input-field-label, .error-display {

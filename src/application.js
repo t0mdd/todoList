@@ -141,6 +141,7 @@ function updateProject(newProject, oldProject) {
     });
     return false;
   }
+  if (isCurrentProject) currentProject = newProject;
   const indexInArray = projects.findIndex((project) => project.title === oldProject.title);
   projects[indexInArray] = newProject;
   sortProjects();
@@ -308,8 +309,6 @@ PubSub.subscribe('complete toggled', (msg, id) => {
   todoToChange.complete = !todoToChange.complete;
 });
 
-PubSub.subscribe('add new todo clicked', (msg) => console.log(window.localStorage));
-
 if ('projects' in window.localStorage) {
   projects = JSONtoProjectArray(window.localStorage.projects);
   currentProject = projectTextDataToStorageData(JSON.parse(window.localStorage.currentProject));
@@ -328,19 +327,10 @@ if ('projects' in window.localStorage) {
   };
 }
 else {
-  createProject(appcsts.INITIAL_PROJECT_DATA);
-  createTodo({
-    title: 'A title',
-    description: 'A description',
-    priority: '5',
-    dueDate: '27/6/2022',
-  });
-  createTodo({
-    title: 'Feel free to delete me',
-    description: "I'm just taking up space here",
-    priority: '7',
-    dueDate: '22/7/2027',
-  });
+  window.onload = () => {
+    createProject(appcsts.INITIAL_PROJECT_DATA);
+    for (const todo of appcsts.INITIAL_TODOS_DATA) createTodo(todo);
+  };
 }
 
 window.addEventListener('beforeunload', () => {

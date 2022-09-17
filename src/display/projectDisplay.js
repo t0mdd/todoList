@@ -57,7 +57,7 @@ function createLinkToProject(projectTitle, projectId) {
 function createErrorDisplayFor(projectId) {
   const errorDisplay = fns.createElement({
     type: 'p',
-    classList: 'project-error-display hidden',
+    classList: 'error-display hidden',
     id: `project-error-display-${projectId}`,
   });
 
