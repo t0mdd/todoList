@@ -41,6 +41,9 @@ for (const method in appcsts.TODO_SORTING_FUNCTIONS) {
   option.addEventListener('click', () => {
     PubSub.publish('todo sort method selected', method);
   });
+  PubSub.subscribe('sort from local storage loaded', (msg, data) => {
+    if (data.todoSort.method === method) option.selected = true;
+  });
   sortMethodDropdown.appendChild(option);
 }
 
@@ -51,6 +54,9 @@ for (const direction of directions) {
   option.textContent = direction;
   option.addEventListener('click', () => {
     PubSub.publish('todo sort direction selected', direction);
+  });
+  PubSub.subscribe('sort from local storage loaded', (msg, data) => {
+    if (data.todoSort.direction === direction) option.selected = true;
   });
   sortDirectionDropdown.appendChild(option);
 }

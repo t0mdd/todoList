@@ -118,6 +118,9 @@ for (const method in appcsts.PROJECT_SORTING_FUNCTIONS) {
   option.addEventListener('click', () => {
     PubSub.publish('project sort method selected', method);
   });
+  PubSub.subscribe('sort from local storage loaded', (msg, data) => {
+    if (data.projectSort.method === method) option.selected = true;
+  });
   sortMethodDropdown.appendChild(option);
 }
 
@@ -128,6 +131,9 @@ for (const direction of directions) {
   option.textContent = direction;
   option.addEventListener('click', () => {
     PubSub.publish('project sort direction selected', direction);
+  });
+  PubSub.subscribe('sort from local storage loaded', (msg, data) => {
+    if (data.projectSort.direction === direction) option.selected = true;
   });
   sortDirectionDropdown.appendChild(option);
 }
@@ -155,7 +161,7 @@ const createProjectDisplay = () => {
   });
 
   PubSub.subscribe('no projects', (msg) => projectList.textContent = appcsts.NO_PROJECTS_MESSAGE);
-  
+
   function addProjectToContainer(projectData) {
     projectList.appendChild(createProjectRow(projectData));
   }
@@ -173,7 +179,9 @@ const createProjectDisplay = () => {
     projectOptionsContainer,
   );
 
-  PubSub.subscribe('project array changed', (msg, projectArray) => displayAllProjects(projectArray));
+  PubSub.subscribe('project array changed', (msg, projectArray) => {
+    displayAllProjects(projectArray);
+  });
 
   return container;
 };
