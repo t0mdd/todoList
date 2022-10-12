@@ -213,7 +213,7 @@ button {
 
 .error-display {
   font-weight: 900;
-  margin-bottom: 5px;
+  margin: 5px 0;
 }
 
 .input-field, .input-field-label, .error-display {
@@ -226,6 +226,10 @@ button {
   border: 2px dashed rgb(248, 217, 254);
   border-radius: 5px;
   margin-bottom: 20px;
+}
+
+.input-field:last-of-type {
+  margin-bottom: 0;
 }
 
 .input-field:focus {

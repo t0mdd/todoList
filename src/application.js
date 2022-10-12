@@ -23,29 +23,9 @@ function setCurrentProject(newProject) {
   else PubSub.publish('no projects');
 }
 
-function findProjectWithTitle(title) {
-  return projects.find((project) => project.title === title);
-}
-
 function findProjectWithId(id) {
   return projects.find((project) => project.id === id);
 }
-
-function largestProjectId() {
-  return Math.max(...projects.map((project) => project.id));
-}
-
-function largestTodoId() {
-  return Math.max(...currentProject.todos.map((todo) => todo.id));
-}
-
-PubSub.subscribe('project link clicked', (msg, linkData) => {
-  const { projectId, isBeingEdited } = linkData;
-  if (!isBeingEdited) {
-    setCurrentProject(findProjectWithId(projectId));
-  }
-  sortTodos();
-});
 
 function projectTitleTaken(newTitle, oldTitle = '') {
   const titlesToSearch = projects
@@ -72,9 +52,18 @@ function generateProjectErrors(newProject, oldProject = false) {
   return errors;
 }
 
-function createProject(data) {
-  const { title } = data;
-  const errors = generateProjectErrors(data);
+function sortProjects() {
+  const { method, direction } = currentProjectSort;
+  const directionFunction = (direction === 'Ascending' ? (x) => x : (x) => -x);
+  function sortingFunction(s, t) {
+    return directionFunction(appcsts.PROJECT_SORTING_FUNCTIONS[method](s, t));
+  }
+  projects.sort(sortingFunction);
+  PubSub.publish('project array changed', projects);
+}
+
+function createProject({ title }) {
+  const errors = generateProjectErrors({ title });
   if (errors.length > 0) {
     PubSub.publish('error creating project', errors);
     return;
@@ -95,7 +84,6 @@ function removeProjectWithId(id) {
 }
 
 PubSub.subscribe('delete project clicked', (msg, projectId) => {
-  const projectToRemove = findProjectWithId(projectId);
   removeProjectWithId(projectId);
   PubSub.publish('project array changed', projects);
   if (currentProject.id === projectId) {
@@ -103,16 +91,9 @@ PubSub.subscribe('delete project clicked', (msg, projectId) => {
   }
 });
 
-function sortProjects() {
-  const { method, direction } = currentProjectSort;
-  const directionFunction = (direction === 'Ascending' ? (x) => x : (x) => -x);
-  function sortingFunction(s, t) {
-    return directionFunction(appcsts.PROJECT_SORTING_FUNCTIONS[method](s, t));
-  }
-  projects.sort(sortingFunction);
-  PubSub.publish('project array changed', projects);
-}
-
+const generateTodosTextData = 
+  () => currentProject.todos.map((todo) => todoStorageDataToTextData(todo));
+  
 function sortTodos() {
   const { method, direction } = currentTodoSort;
   const directionFunction = (direction === 'Ascending' ? (x) => x : (x) => -x);
@@ -122,6 +103,14 @@ function sortTodos() {
   currentProject.todos.sort(sortingFunction);
   PubSub.publish('todo array changed', generateTodosTextData());
 }
+
+PubSub.subscribe('project link clicked', (msg, linkData) => {
+  const { projectId, isBeingEdited } = linkData;
+  if (!isBeingEdited) {
+    setCurrentProject(findProjectWithId(projectId));
+  }
+  sortTodos();
+});
 
 function updateProjectData(oldProject, updatedData) {
   const newProject = { ...oldProject };
@@ -135,7 +124,7 @@ function updateProject(newProject, oldProject) {
   const isCurrentProject = currentProject.title === oldProject.title;
   const errors = generateProjectErrors(newProject, oldProject);
   if (errors.length > 0) {
-    PubSub.publish('error updating project', { 
+    PubSub.publish('error updating project', {
       errors,
       errorId: oldProject.id,
     });
@@ -153,8 +142,7 @@ function updateProject(newProject, oldProject) {
   return true;
 }
 
-PubSub.subscribe('rename project clicked', (msg, titleData) => {
-  const { id, newTitle } = titleData;
+PubSub.subscribe('rename project clicked', (msg, { id, newTitle }) => {
   const oldProject = findProjectWithId(id);
   const newProject = updateProjectData(oldProject, {title: newTitle});
   updateProject(newProject, oldProject);
@@ -232,8 +220,6 @@ function JSONtoProjectArray(projectArrayJSON) {
   return JSON.parse(projectArrayJSON).map((textDatum) => projectTextDataToStorageData(textDatum));
 }
 
-const generateTodosTextData = () => currentProject.todos.map((todo) => todoStorageDataToTextData(todo));
-
 function generateTodoErrors(todo, oldTodo = false) {
   const errors = [];
   const { title, dueDate, priority } = todo;
@@ -250,8 +236,7 @@ function generateTodoErrors(todo, oldTodo = false) {
   return errors;
 }
 
-function createTodo(textData) {
-  const { title, priority, description, dueDate } = textData;
+function createTodo({ title, priority, description, dueDate }) {
   const parsedDueDate = dueDate ? parseDate(dueDate) : new Date();
   const todo = {
     title,
@@ -272,18 +257,17 @@ function createTodo(textData) {
   PubSub.publish('todo added', generateTodosTextData());
 }
 
-function updateTodoData(oldTodo, updatedData) {
+function updateTodoData(oldTodo, updatedTextData) {
   const newTodo = { ...oldTodo };
-  forEach(updatedData, (value, key) => {
-    if (key !== 'id') newTodo[key] = updatedData[key];
+  forEach(updatedTextData, (value, key) => {
+    newTodo[key] = updatedTextData[key];
   });
   return newTodo;
 }
 
-function updateTodo(updatedData) {
-  const { id } = updatedData;
+function updateTodo({ id, updatedStorageData }) {
   const oldTodo = findTodoWithId(id);
-  const newTodo = updateTodoData(oldTodo, updatedData);
+  const newTodo = updateTodoData(oldTodo, updatedStorageData);
   const errors = generateTodoErrors(newTodo, oldTodo);
   if (errors.length > 0) {
     PubSub.publish('error updating todo', { errors, editedTodoId: id });
@@ -300,8 +284,8 @@ PubSub.subscribe('create todo clicked', (msg, data) => {
   createTodo(data);
 });
 
-PubSub.subscribe('todo edited', (msg, todoTextData) => {
-  updateTodo(todoTextDataToStorageData(todoTextData));
+PubSub.subscribe('todo edited', (msg, { id, updatedTextData }) => {
+  updateTodo(({ id, updatedStorageData: todoTextDataToStorageData(updatedTextData) }));
 });
 
 PubSub.subscribe('complete toggled', (msg, id) => {

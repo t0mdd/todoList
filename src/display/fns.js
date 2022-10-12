@@ -1,12 +1,31 @@
 import { mapValues } from 'lodash';
 
-function createElement(data) {
-  const { type, classList, id, textContent, clickEventListener } = data;
+function mapObjectVals(obj, valMap) {
+  const result = {};
+  for (const key in obj) result[key] = valMap(obj[key]);
+  return result;
+}
+
+function forEachObjectVal(obj, process) {
+  mapObjectVals(obj, process);
+}
+
+function filterObjectVals(obj, predicate) {
+  const result = {};
+  for (const key in obj) {
+    const value = obj[key];
+    if (predicate(value)) result[key] = value;
+  }
+  return result;
+}
+
+function createElement({ type, classList, id, textContent, clickEventListener, data = {} }) {
   const element = document.createElement(type);
   if (classList) element.classList.add(...classList.split(' '));
   if (id) element.id = id;
   if (textContent) element.textContent = textContent;
-  if (clickEventListener) element.addEventListener('click', clickEventListener);
+  if (clickEventListener) element.addEventListener('click', clickEventListener.bind(element));
+  element.data = data;
   return element;
 }
 
@@ -21,12 +40,20 @@ function clearContent(element) {
   element.innerHTML = '';
 }
 
+function hideElement(element) {
+  element.classList.add('hidden');
+}
+
+function showElement(element) {
+  element.classList.remove('hidden');
+}
+
 function hideElements(elements) {
-  for (const element of arguments) element.classList.add('hidden');
+  for (const element of arguments) hideElement(element);
 }
 
 function showElements(elements) {
-  for (const element of arguments) element.classList.remove('hidden');
+  for (const element of arguments) showElement(element);
 }
 
 function createInputFieldLabels(formStructure) {
@@ -71,9 +98,14 @@ function runIfConfirmed(functionToRun) {
 }
 
 export {
+  mapObjectVals,
+  forEachObjectVal,
+  filterObjectVals,
   createElement,
   createContainer,
   createErrorMessage,
+  hideElement,
+  showElement,
   hideElements,
   showElements,
   createInputFieldLabels,
